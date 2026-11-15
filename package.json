@@ -1,11 +1,16 @@
 {
   "name": "dl-tab",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "npm run build && node server.mjs",
-    "test": "npm run build && node --test test/*.test.mjs"
+    "test": "npm run build && node --test test/*.test.mjs",
+    "audit": "npm audit --audit-level=moderate"
+  },
+  "engines": {
+    "node": ">=22"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
