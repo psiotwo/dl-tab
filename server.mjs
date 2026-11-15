@@ -16,7 +16,7 @@ export function createAppServer(root = projectRoot) {
       const pathname = decodeURIComponent(new URL(req.url || '/', 'http://localhost').pathname);
       const resource = pathname === '/' ? '/index.html' : pathname;
       // Only public application assets belong on this server.
-      if (!/^\/(?:index\.html|style\.css|dist\/[A-Za-z_][A-Za-z_0-9-]*\.js)$/.test(resource)) {
+      if (!/^\/(?:index\.html|app\.html|style\.css|dist\/[A-Za-z_][A-Za-z_0-9-]*\.js)$/.test(resource)) {
         res.writeHead(404).end('Not found');
         return;
       }

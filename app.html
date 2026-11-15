@@ -1,0 +1,28 @@
+  <main>
+    <section class="input-panel" aria-label="Input">
+      <div class="section-heading"><h2>Knowledge base</h2></div>
+      <label for="example">Example</label><select id="example" aria-describedby="example-explanation"></select>
+      <p id="example-explanation" class="example-explanation"></p>
+      <div class="symbol-toolkit" role="toolbar" aria-label="Description logic symbols">
+        <span>Symbols</span>
+        <button type="button" data-insert=" ⊑ " data-target="tbox" title="Subsumption; TBox only" aria-label="Insert subsumption into TBox">⊑</button>
+        <button type="button" data-insert=" ≡ " data-target="tbox" title="Equivalence; TBox only" aria-label="Insert equivalence into TBox">≡</button>
+        <button type="button" data-insert=" ⊓ " title="Intersection (and)" aria-label="Insert intersection">⊓</button>
+        <button type="button" data-insert=" ⊔ " title="Union (or)" aria-label="Insert union">⊔</button>
+        <button type="button" data-insert="¬" title="Negation" aria-label="Insert negation">¬</button>
+        <button type="button" data-insert="∃" title="Existential restriction: ∃role.Concept" aria-label="Insert existential quantifier">∃</button>
+        <button type="button" data-insert="∀" title="Universal restriction: ∀role.Concept" aria-label="Insert universal quantifier">∀</button>
+        <button type="button" data-insert="." title="Separate role and concept" aria-label="Insert role separator">.</button>
+        <button type="button" data-insert="⊤" title="Top concept" aria-label="Insert top">⊤</button>
+        <button type="button" data-insert="⊥" title="Bottom concept" aria-label="Insert bottom">⊥</button>
+        <button type="button" data-insert="()" data-caret="-1" title="Parentheses; cursor placed inside" aria-label="Insert parentheses">( )</button>
+        <details class="syntax-help"><summary>Syntax &amp; completion</summary><p>One axiom per line. TBox: <code>A ⊑ B</code> or <code>A ≡ B</code>. ABox: <code>C(a)</code> or <code>r(a,b)</code>. Use <code>∃r.C</code>, <code>∀r.C</code>, and parentheses for complex concepts. Suggestions follow the cursor; press <code>Ctrl+Space</code> to reopen them. To test concept <code>C</code>, add <code>C(a)</code> for a fresh <code>a</code>.</p></details>
+      </div>
+      <div class="editors"><div class="editor-field"><label for="tbox">TBox</label><textarea id="tbox" spellcheck="false" aria-describedby="parse-error"></textarea></div><div class="editor-field"><label for="abox">ABox</label><textarea id="abox" spellcheck="false" aria-describedby="parse-error"></textarea></div></div>
+      <div class="actions"><button id="run">Build tableau</button><span id="parse-error" role="alert"></span></div>
+    </section>
+    <section id="results" class="results" aria-label="Tableau exploration" hidden>
+      <div class="section-heading"><h2>Exploration</h2><strong id="outcome"></strong></div>
+      <div class="workspace"><aside><div class="section-heading"><h3>Steps</h3></div><div id="trace" class="trace"></div></aside><div class="viewer"><div class="stepbar"><button id="prev" aria-label="Previous step">←</button><span id="step-title">Run an example</span><button id="next" aria-label="Next step">→</button></div><p id="step-explanation"></p><div id="graph" class="graph"></div><details id="model-panel" class="model-panel" hidden><summary>Example model 𝓘</summary><div id="model-content"></div></details></div></div>
+    </section>
+  </main>

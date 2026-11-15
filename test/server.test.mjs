@@ -12,7 +12,8 @@ test('serves only public assets, including protection against symlink leaks', as
   await mkdir(join(root, 'dist'));
   await mkdir(join(root, '.git'));
   for (const [name, body] of Object.entries({
-    'index.html': '<h1>DL-TAB</h1>', 'style.css': 'body {}', 'dist/main.js': 'export {};',
+    'index.html': '<h1>DL-TAB</h1>', 'app.html': '<main>DL-TAB</main>',
+    'style.css': 'body {}', 'dist/main.js': 'export {};',
     '.git/config': 'private git metadata', '.env': 'private configuration',
     'package.json': '{}', 'server.mjs': 'private source',
   })) await writeFile(join(root, name), body);
@@ -25,7 +26,7 @@ test('serves only public assets, including protection against symlink leaks', as
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
-  for (const [path, type] of [['/', 'text/html'], ['/index.html', 'text/html'],
+  for (const [path, type] of [['/', 'text/html'], ['/index.html', 'text/html'], ['/app.html', 'text/html'],
     ['/style.css', 'text/css'], ['/dist/main.js?v=1', 'text/javascript']]) {
     const response = await fetch(base + path);
     assert.equal(response.status, 200, path);

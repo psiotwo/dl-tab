@@ -5,7 +5,29 @@ import { CARD_WIDTH, layoutGraph } from './layout.js';
 import { attachAutocomplete } from './autocomplete.js';
 import type { GraphNode } from './logic.js';
 
-const $ = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
+const mount = document.getElementById('dl-tab');
+if (!mount) throw new Error('Missing DL-TAB mount point');
+const root = mount.attachShadow({ mode: 'open' });
+const stylesheet = document.createElement('link');
+stylesheet.rel = 'stylesheet';
+stylesheet.href = new URL('../style.css', import.meta.url).href;
+const cssReady = new Promise<void>((resolve, reject) => {
+  stylesheet.onload = () => resolve();
+  stylesheet.onerror = () => reject(new Error('Could not load DL-TAB styles'));
+});
+root.append(stylesheet);
+try {
+  const [response] = await Promise.all([fetch(new URL('../app.html', import.meta.url)), cssReady]);
+  if (!response.ok) throw new Error('Could not load DL-TAB content');
+  const template = document.createElement('template');
+  template.innerHTML = await response.text();
+  root.append(template.content);
+} catch (error) {
+  root.textContent = 'DL-TAB could not load. Please reload the page.';
+  throw error;
+}
+
+const $ = <T extends HTMLElement>(id: string): T => root.getElementById(id) as T;
 let result: Exploration | undefined;
 let selected = 0;
 const expandedNodes = new Set<string>();
@@ -39,7 +61,7 @@ for (const [editor, kind] of [[tboxEditor, 'tbox'], [aboxEditor, 'abox']] as con
     clearTimeout(validationTimer);
     validationTimer = setTimeout(readKnowledgeBase, 400);
   });
-document.querySelectorAll<HTMLButtonElement>('.symbol-toolkit button').forEach(button => button.addEventListener('click', () => {
+root.querySelectorAll<HTMLButtonElement>('.symbol-toolkit button').forEach(button => button.addEventListener('click', () => {
   const editor = button.dataset.target === 'tbox' ? tboxEditor : activeEditor;
   const start = editor.selectionStart, end = editor.selectionEnd;
   const selectedText = editor.value.slice(start, end);
@@ -221,5 +243,9 @@ function selectStep(index: number): void {
 }
 $('prev').addEventListener('click', () => selectStep(selected - 1));
 $('next').addEventListener('click', () => selectStep(selected + 1));
-document.addEventListener('keydown', e => { if (e.target instanceof HTMLTextAreaElement) return; if (e.key === 'ArrowRight') $('next').click(); if (e.key === 'ArrowLeft') $('prev').click(); });
+root.addEventListener('keydown', e => {
+  if (!(e instanceof KeyboardEvent) || e.target instanceof HTMLTextAreaElement) return;
+  if (e.key === 'ArrowRight') $('next').click();
+  if (e.key === 'ArrowLeft') $('prev').click();
+});
 loadExample();

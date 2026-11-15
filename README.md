@@ -9,6 +9,8 @@ npm run dev
 
 Open <http://localhost:5173>. The development server binds to IPv4 loopback and serves only the HTML, CSS, and compiled JavaScript assets. `npm test` runs parser, reasoning, layout, completion, and server checks. `npm run build` compiles the TypeScript to `dist/`.
 
+The application markup lives in `app.html`. `dist/main.js` loads it into `#dl-tab` and isolates the application CSS in a shadow root. A hosting page needs that mount point plus `dist/main.js`; publish `app.html`, `style.css`, and `dist/` together. `index.html` is the standalone development page.
+
 The example picker starts with a single existential witness, a disjunction with one closed branch, and a one-person open-world example. Child and clinical cases, a cyclic TBox, and nested restrictions follow. Each preset explains its expected result and the inference rules to watch.
 
 Requires Node.js 22 or newer. See [Contributing](CONTRIBUTING.md) for versioning, automated checks, and GitHub setup, and [Security](SECURITY.md) for vulnerability reporting.
