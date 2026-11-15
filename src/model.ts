@@ -1,5 +1,6 @@
 import type { CompletionGraph, Concept } from './logic.js';
 import { blockedBy } from './rules.js';
+import { breadthFirstRanks } from './graph.js';
 
 export interface ExampleModel {
   domain: string[];
@@ -31,20 +32,7 @@ export function exampleModel(graph: CompletionGraph): ExampleModel {
     representativesById.set(id, node.id);
     return node.id;
   };
-  const incoming = new Set(graph.edges.map(edge => edge.to));
-  const outgoing = new Map(graph.nodes.map(node => [node.id, [] as string[]]));
-  for (const edge of graph.edges) outgoing.get(edge.from)!.push(edge.to);
-  const starts = [...graph.nodes.filter(node => !incoming.has(node.id)), ...graph.nodes];
-  const visited = new Set<string>(), ordered: string[] = [];
-  for (const start of starts) {
-    if (visited.has(start.id)) continue;
-    const queue = [start.id];
-    for (const id of queue) {
-      if (visited.has(id)) continue;
-      visited.add(id); ordered.push(id);
-      queue.push(...outgoing.get(id)!);
-    }
-  }
+  const ordered = [...breadthFirstRanks(graph).keys()];
   const representatives = [...new Set(ordered.map(representative))];
   const elements = new Map(representatives.map((id, index) => [id, `d${index}`]));
   const elementOf = (id: string): string => elements.get(representative(id))!;

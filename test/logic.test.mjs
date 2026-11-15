@@ -84,6 +84,31 @@ test('allows a custom rule and blocking policy', () => {
 test('reports unknown when a step limit prevents completion', () => {
   const e = explore(parseKnowledgeBase('', '(A ⊓ B)(a)'), { maxSteps: 1 });
   assert.equal(e.outcome, 'limit');
+  assert.equal(e.steps.length, 1);
+  assert.equal(e.steps[0].status, 'limit');
+});
+test('snapshot budget covers all sibling branches and preserves valid links', () => {
+  const kb = parseKnowledgeBase('', '((A ⊓ ¬A) ⊔ (B ⊓ ¬B))(a)');
+  for (const maxSteps of [1, 2, 3, 4]) {
+    const e = explore(kb, { maxSteps });
+    assert.equal(e.outcome, 'limit');
+    assert.equal(e.steps.length, maxSteps);
+    assert.ok(e.steps.some(step => step.status === 'limit'));
+    for (const step of e.steps)
+      for (const child of step.children)
+        assert.equal(e.steps[child].parent, step.id);
+  }
+  assert.equal(explore(kb, { maxSteps: 5 }).outcome, 'inconsistent');
+});
+test('recognizes terminal graphs at the budget boundary', () => {
+  for (const [abox, outcome] of [['A(a)', 'consistent'], ['⊥(a)', 'inconsistent']])
+    assert.equal(explore(parseKnowledgeBase('', abox), { maxSteps: 1 }).outcome, outcome);
+  assert.equal(explore(parseKnowledgeBase('', '(A ⊔ B)(a)'), { maxSteps: 2 }).outcome, 'consistent');
+});
+test('rejects invalid snapshot budgets', () => {
+  const kb = parseKnowledgeBase('', 'A(a)');
+  for (const maxSteps of [0, -1, 1.5, NaN, Infinity])
+    assert.throws(() => explore(kb, { maxSteps }), RangeError);
 });
 test('every preset matches its described outcome', () => {
   for (const example of examples) {
@@ -160,6 +185,13 @@ test('layout handles ABox cycles and groups role labels on one edge', () => {
   assert.equal(layout.edges.length, 2);
   assert.ok(layout.edges.some(edge => edge.label === 'r, s'));
   assert.ok(layout.edges.some(edge => edge.route === 'below'));
+});
+test('traversal includes disconnected roots, cycles, and isolated individuals', () => {
+  const graph = initialGraph(parseKnowledgeBase('', 'A(z)\nr(a,b)\nr(c,d)\nr(d,c)'));
+  const layout = layoutGraph(graph, new Map(graph.nodes.map(node => [node.id, 140])), () => 8);
+  assert.deepEqual([...layout.ranks], [['z', 0], ['a', 0], ['b', 1], ['c', 0], ['d', 1]]);
+  assert.deepEqual(exampleModel(graph).individuals.map(i => i.name), graph.nodes.map(n => n.id));
+  assert.equal(exampleModel(graph).domain.length, graph.nodes.length);
 });
 test('autocomplete suggests syntax according to the cursor context', () => {
   const items = (kind, text, caret = text.length) => suggestions(kind, text, caret).items.map(item => item.insert);

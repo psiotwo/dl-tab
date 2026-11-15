@@ -7,7 +7,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>. `npm test` runs parser and reasoning checks. `npm run build` compiles the TypeScript to `dist/`.
+Open <http://localhost:5173>. The development server binds to IPv4 loopback and serves only the HTML, CSS, and compiled JavaScript assets. `npm test` runs parser, reasoning, layout, completion, and server checks. `npm run build` compiles the TypeScript to `dist/`.
 
 The example picker starts with a single existential witness, a disjunction with one closed branch, and a one-person open-world example. Child and clinical cases, a cyclic TBox, and nested restrictions follow. Each preset explains its expected result and the inference rules to watch.
 
@@ -39,3 +39,5 @@ Each complete open branch offers an example interpretation `𝓘`. The graph use
 `src/rules.ts` contains the five independent rule objects and the `BlockingPolicy` interface. A rule finds one applicable match and returns graph changes, one per branch. `src/reasoner.ts` applies each change to a separate graph copy and records the trace. Pass a custom ordered `rules` array or `blocking` policy to `explore(kb, { rules, blocking })`. Rule order controls which explanation students see first. The default order applies deterministic rules before branching and witness creation.
 
 This is a deliberately small teaching implementation of **ALC**, not a production OWL reasoner. It stops after 400 snapshots and reports an unknown result if that limit prevents a conclusion. For a cyclic TBox, a blocked completion graph represents a finite model by folding blocked nodes back to their blockers; the UI shows the blocking relationship.
+
+`maxSteps` must be a positive safe integer and caps the total snapshots across all branches, including the initial graph. A terminal graph at the limit still yields a conclusion; a discovered open branch establishes consistency even if other alternatives remain unexplored.

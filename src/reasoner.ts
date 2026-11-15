@@ -25,6 +25,8 @@ export interface ReasonerOptions {
 
 export function explore(kb: KnowledgeBase, options: ReasonerOptions = {}): Exploration {
   const { maxSteps = 400, rules = alcRules, blocking = subsetBlocking } = options;
+  if (!Number.isSafeInteger(maxSteps) || maxSteps < 1)
+    throw new RangeError('maxSteps must be a positive safe integer');
   const context: RuleContext = { inclusions: compileInclusions(kb.tbox), blocking };
   const steps: Step[] = [];
   let open = false, limited = false;
@@ -35,7 +37,6 @@ export function explore(kb: KnowledgeBase, options: ReasonerOptions = {}): Explo
     const step: Step = { id, parent, depth, rule, explanation, graph, status: 'active', children: [] };
     steps.push(step);
 
-    if (id >= maxSteps) { step.status = 'limit'; limited = true; return id; }
     const conflict = graph.nodes.map(clash).find(Boolean);
     if (conflict) {
       step.status = 'closed';
@@ -54,12 +55,18 @@ export function explore(kb: KnowledgeBase, options: ReasonerOptions = {}): Explo
       return id;
     }
     const { rule: appliedRule, application } = match;
-    application.choices.forEach((change, i) => {
+    for (const [i, change] of application.choices.entries()) {
+      if (steps.length >= maxSteps) {
+        step.status = 'limit';
+        step.explanation += ' Snapshot limit reached; some alternatives remain unexplored.';
+        limited = true;
+        break;
+      }
       const next = structuredClone(graph);
       change(next);
       const choice = application.choices.length > 1 ? ` Choice ${i + 1}.` : '';
       step.children.push(visit(next, id, appliedRule.name, application.explanation + choice, depth + 1));
-    });
+    }
     return id;
   }
 

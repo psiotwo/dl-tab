@@ -1,4 +1,5 @@
 import type { CompletionGraph } from './logic.js';
+import { breadthFirstRanks } from './graph.js';
 
 export const CARD_WIDTH = 208;
 type Point = { x: number; y: number };
@@ -29,20 +30,7 @@ function ranksOf(graph: CompletionGraph): Map<string, number> {
     if (!changed) return ranks;
   }
   // ABox cycles have no topological order; use shortest paths from roots instead.
-  const fallback = new Map<string, number>();
-  const incoming = new Set(graph.edges.map(edge => edge.to));
-  const outgoing = new Map(graph.nodes.map(node => [node.id, [] as string[]]));
-  for (const edge of graph.edges) outgoing.get(edge.from)!.push(edge.to);
-  const roots = graph.nodes.filter(node => !incoming.has(node.id)).map(node => node.id);
-  for (const start of [...roots, ...graph.nodes.map(node => node.id)]) {
-    if (fallback.has(start)) continue;
-    fallback.set(start, 0);
-    const queue = [start];
-    for (const id of queue)
-      for (const to of outgoing.get(id)!)
-        if (!fallback.has(to)) { fallback.set(to, fallback.get(id)! + 1); queue.push(to); }
-  }
-  return fallback;
+  return breadthFirstRanks(graph);
 }
 
 export function layoutGraph(

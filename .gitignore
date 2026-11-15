@@ -1,2 +1,14 @@
 node_modules/
 dist/
+
+# Local tooling and credentials
+.idea/
+.vscode/
+.agents/
+.codex/
+.aws/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
